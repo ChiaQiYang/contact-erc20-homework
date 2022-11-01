@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ZJU-blockchain-course-2022
 
 ⬆ 可以️修改成你自己的项目名。
@@ -54,3 +55,6 @@
 课程的参考Demo见：[DEMOs](https://github.com/LBruyne/blockchain-course-demos)。
 
 如果有其它参考的内容，也请在这里陈列。
+=======
+# contact-erc20-homework
+>>>>>>> 9f02540 (Initial commit)
