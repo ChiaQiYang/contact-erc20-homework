@@ -1,23 +1,6 @@
 <<<<<<< HEAD
 # ZJU-blockchain-course-2022
 
-⬆ 可以️修改成你自己的项目名。
-
-> 第二次作业要求（可以删除）：
-> 
-> 去中心化学生社团组织治理应用 
-> 
-> - 每个学生初始可以拥有或领取一些通证积分（ERC20）。 
-> - 每个学生可以在应用中可以： 
->    1. 使用一定数量通证积分，发起关于该社团进行活动或制定规则的提案（Proposal）。 
->    2. 提案发起后一定支出时间内，使用一定数量通证积分可以对提案进行投票（赞成或反对，限制投票次数），投票行为被记录到区块链上。 
->    3. 提案投票时间截止后，赞成数大于反对数的提案通过，提案发起者作为贡献者可以领取一定的积分奖励。 
-> 
-> - (Bonus）发起提案并通过3次的学生，可以领取社团颁发的纪念品（ERC721）
-
-**以下内容为作业仓库的README.md中需要描述的内容。请根据自己的需要进行修改并提交。**
-
-作业提交方式为：提交视频文件和仓库的连接到指定邮箱。
 
 ## 如何运行
 
@@ -31,8 +14,13 @@
     ```bash
     npx hardhat compile
     ```
-4. ...
-5. ...
+4. 在`./contracts/hardhat.config.ts`中更改ganache相关数据
+5. 在 `./contracts` 中编译合约，运行如下的命令：
+    ```bash
+    npx hardhat run scripts/deploy.ts --network ganache
+    ```
+    
+    并将合约输出更新到`./frontend/src/utils`
 6. 在 `./frontend` 中启动前端程序，运行如下的命令：
     ```bash
     npm run start
@@ -40,15 +28,65 @@
 
 ## 功能实现分析
 
-简单描述：项目完成了要求的哪些功能？每个功能具体是如何实现的？
+1. 领取ERC20 token
 
-建议分点列出。
+   使用_mint分配给请求者一些证积分
+
+   再记录至mapping中，以辨认谁已经领取了
+
+2. 使用一定数量通证积分发布提案
+
+   使用transferfrom将token转给合约
+
+   创建结构体以记录提案内容
+
+   再记录至mapping中，使得能够通过index找寻该提案
+
+3. 一定时间内，能够进行投票
+
+   使用transferfrom将token转给合约
+
+   更新提案数据agree, disagree
+
+   再记录至mapping中，以辨认谁已经投票了
+
+4. 领取奖励
+
+   使用transfer将token转给请求者
+
+   更新提案数据
 
 ## 项目运行截图
 
-放一些项目运行截图。
+npx hardhat run scripts/deploy.ts --network ganache![ganache deploy 2](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/ganache deploy 2.png)
 
-项目运行成功的关键页面和流程截图。主要包括操作流程以及和区块链交互的截图。
+npm start
+
+![npm start 1](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/npm start 1.png)
+
+![npm start 2](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/npm start 2.png)
+
+界面初始化（没有任何数据）![begin](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/begin.png)
+
+领取初始token![claim airdrop 1](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/claim airdrop 1.png)
+
+![claim airdrop 2](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/claim airdrop 2.png)
+
+发布提案
+
+![sumbit proposal 1](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/sumbit proposal 1.png)
+
+![sumbit proposal 2](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/sumbit proposal 2.png)
+
+投票![vote](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/vote.png)
+
+![vote 2](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/vote 2.png)
+
+查看以往提案![check proposal 1](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/check proposal 1.png)
+
+![check proposal 2](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/check proposal 2.png)
+
+领取奖励![claimreward](/Users/chiaqiyang/Desktop/homework/ZJU-blockchain-course-2022-main/screenshot/claimreward.png)
 
 ## 参考内容
 

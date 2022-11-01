@@ -37,7 +37,7 @@ contract StudentSocietyDAO {
     uint32 public Index=1;
     uint32 constant public ProposalGenerateAmount=1000;
     uint32 constant public VoteAmount=10;
-    uint32 constant public ProposalDuration=10 seconds;
+    uint32 constant public ProposalDuration=60 seconds;
     constructor() {
         myERC20 = new MyERC20("ZJUToken", "ZJUTokenSymbol");
     }
@@ -83,7 +83,8 @@ contract StudentSocietyDAO {
         sendervoted=!voted[msg.sender][index];
     }
     function vote(uint32 index,bool Vote)payable external{
-        require(voted[msg.sender][index]==false&&block.timestamp<(proposals[index].startTime+proposals[index].duration),"vote outdate");
+        require(voted[msg.sender][index]==false,"unable to vote");
+        require(block.timestamp<(proposals[index].startTime+proposals[index].duration),"vote outdate");
         myERC20.transferFrom(msg.sender, address(this), VoteAmount);
         if(Vote==true){
             proposals[index].agree++;

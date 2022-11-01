@@ -1,12 +1,6 @@
-import React, { useRef } from 'react';
-import logo from './logo.svg';
-
 import {useEffect, useState} from 'react';
 import {StudentSocietyDAOContract, myERC20Contract, web3} from "./utils/contracts";
 import './App.css';
-import { stringify } from 'querystring';
-import { isTypeAliasDeclaration } from 'typescript';
-import { text } from 'stream/consumers';
 const GanacheTestChainId = '0x539' 
 const GanacheTestChainName = 'Ganache Test Chain'
 const GanacheTestChainRpcUrl = 'http://127.0.0.1:8545'
@@ -22,40 +16,14 @@ function App() {
   const [agree, setagree] = useState('')
   const [disagree, setdisagree] = useState('')
   const [votestatus, setvotestatus] = useState(false)
-  const [claimstatus, setclaimstatus] = useState(false)
+  const [claimstatus, setclaimstatus] = useState(true)
   const [voteavailabes, setvoteavailabes] = useState(false)
+  const [airdropclaimed, setairdropclaimed] = useState(false)
 
   const [proposalname, setproposalname] = useState('')
   const [idinput, setinput] = useState('')
 
-  const [refresh, setrefresh] = useState(false)
-  useEffect(() => {const getproposalinfo = async () => {
-    if (StudentSocietyDAOContract&&myERC20Contract) {
-        try {
-            if(index>0){    
-                var Name:string='123   '        
-                Name =await StudentSocietyDAOContract.methods.getproposalname(index).call();
-                const info =await StudentSocietyDAOContract.methods.getproposalstatus(index).call();
-                setname(Name);
-                setagree(info[0]);
-                setdisagree(info[1]);
-                setvotestatus(info[2]);
-                setclaimstatus(info[3]);
-                setvoteavailabes(info[4]);
-
-                const ab = await myERC20Contract.methods.balanceOf(account).call()
-                setAccountBalance(ab)
-            }
-        } catch (error: any) {
-            alert(error.message)
-        }
-
-    } else {
-        alert('Contract not exists.')
-    }
-}
-    getproposalinfo()
-},[index,refresh])
+  
   useEffect(() => {
     // 初始化检查用户是否已经连接钱包
     // 查看window对象里是否存在ethereum（metamask安装后注入的）对象
@@ -77,14 +45,15 @@ useEffect(() => {
     // 初始化检查用户是否已经连接钱包
     // 查看window对象里是否存在ethereum（metamask安装后注入的）对象
     const initContact = async () => {
-        if (StudentSocietyDAOContract) {
-            const Id = await StudentSocietyDAOContract.methods.Index().call()-1;
-            setIndex(Id)
-            setindex(Id)
+        if (StudentSocietyDAOContract&&myERC20Contract) {
             const va = await StudentSocietyDAOContract.methods.VoteAmount().call()
             setVotemount(va)
             const pa = await StudentSocietyDAOContract.methods.ProposalGenerateAmount().call()
             setProposalGenerateAmount(pa)
+
+            const Id= await StudentSocietyDAOContract.methods.getindex().call();
+            setIndex(Number(Id))
+            setindex(Number(Id))
         } else {
             alert('Contract not exists.')
         }
@@ -96,6 +65,11 @@ useEffect(() => {
         if (myERC20Contract) {
             const ab = await myERC20Contract.methods.balanceOf(account).call()
             setAccountBalance(ab)
+
+            const ac = await myERC20Contract.methods.claimed().call({
+                from: account
+            })
+            setairdropclaimed(ac)
         } else {
             alert('Contract not exists.')
         }
@@ -105,7 +79,33 @@ useEffect(() => {
         getAccountInfo()
     }
 }, [account])
+useEffect(() => {const getproposalinfo = async () => {
+    if (StudentSocietyDAOContract&&myERC20Contract) {
+        try {
+            if(index>0){ 
+                var Name;      
+                Name =await StudentSocietyDAOContract.methods.getproposalname(index).call();
+                const info =await StudentSocietyDAOContract.methods.getproposalstatus(index).call({
+                    from: account
+                })
+                setname(Name);
+                setagree(info[0]);
+                setdisagree(info[1]);
+                setvotestatus(info[2]);
+                setclaimstatus(info[3]);
+                setvoteavailabes(info[4]);
+            }
+        } catch (error: any) {
+            alert(error.message)
+        }
+
+    } else {
+        alert('Contract not exists.')
+    }
+}
+    getproposalinfo()
     
+},[index,account])
     
 
   const onClickConnectWallet = async () => {
@@ -160,6 +160,7 @@ useEffect(() => {
                     from: account
                 })
                 alert('You have claimed ZJU Token.')
+                window.location.reload();
             } catch (error: any) {
                 alert(error.message)
             }
@@ -183,9 +184,12 @@ useEffect(() => {
                 })
                 alert('proposal generated.')
 
-                const Id = await StudentSocietyDAOContract.methods.Index().call()-1;
+                const Id = await StudentSocietyDAOContract.methods.getindex().call();
                 setIndex(Id)
                 setindex(Id)
+
+                window.location.reload();
+                
             } catch (error: any) {
                 alert(error.message)
             }
@@ -193,6 +197,7 @@ useEffect(() => {
         } else {
             alert('Contract not exists.')
         }
+
     }
     
     const switchproposal = async () => {
@@ -218,15 +223,28 @@ useEffect(() => {
             return
         }
         const Vote= async () => {
+
+           
             if (StudentSocietyDAOContract&&myERC20Contract) {
-                try {
+                try { 
+                    const info =await StudentSocietyDAOContract.methods.getproposalstatus(index).call({
+                    from: account
+                    })
                     await myERC20Contract.methods.approve(StudentSocietyDAOContract.options.address, voteAmount).send({
                         from: account
                     })
-                    await StudentSocietyDAOContract.methods.vote(index,state).send({
-                        from: account
-                    })
-                    alert('vote sucess.')
+                    setvotestatus(info[2]);
+                    setvoteavailabes(info[4]);
+                    if(votestatus&&voteavailabes){
+                        await StudentSocietyDAOContract.methods.vote(index,state).send({
+                            from: account
+                        })
+                        alert('vote sucess.')
+                        window.location.reload();
+                    }else{
+                        alert('unable to vote.')
+                    }
+
                 } catch (error: any) {
                     alert(error.message)
                 }
@@ -236,7 +254,6 @@ useEffect(() => {
             }
         }
         Vote();
-        setrefresh(!refresh);
     }
     function claim(){
         if(account === '') {
@@ -250,6 +267,8 @@ useEffect(() => {
                         from: account
                     })
                     alert('received')
+
+                    window.location.reload();
                 } catch (error: any) {
                     alert(error.message)
                 }
@@ -259,29 +278,32 @@ useEffect(() => {
             }
         }
         Claim();
-        setrefresh(!refresh);
     }
   return (
     <div className="App" >
         <div className="container" >
           <div className="main">
-          <button onClick={onClaimTokenAirdrop}>领取浙大币空投</button>
+          {airdropclaimed===true?"":<button onClick={onClaimTokenAirdrop}>领取浙大币空投</button>}
             <div className='account'>
                 {account === '' && <button onClick={onClickConnectWallet}>连接钱包</button>}
                 <div>当前用户：{account === '' ? '无用户连接' : account}</div>
                 <div>当前用户拥有浙大币数量：{account === '' ? 0 : accountBalance}</div>
             </div>
-            <input type="number" id="discription"  onChange={e => setinput(e.target.value)} placeholder='请输入提议编号'></input>
-            <button onClick={switchproposal}>查询</button>
-            {index===0 ? '':
+
+            {Index===0 ?
+            "":<div>
+            <p>最新提议编号：{Index}</p>
+            <input type="number" id="index" onChange={e => setinput(e.target.value)} placeholder='请输入提议编号'></input>
+            <button onClick={switchproposal}>查询</button></div>}
+            {Index===0 ? '':
             <div className="operation">
             <p>提议：{index}</p>
             <p>{name}</p>
             <p>赞成：{agree}</p>
             <p>反对：{disagree}</p>
-            {votestatus===false||voteavailabes===false? '':
+            {(votestatus===false||voteavailabes===false)? '':
             <div style={{bottom: '50px'}}>
-            <p>提议需{proposalGenerateAmount}币</p>
+            <p>提议需{voteAmount}币</p>
             <button style={{marginRight: '10px'}} onClick={vote.bind(null,true)}>赞成</button>
             <button style={{marginLeft: '10px'}} onClick={vote.bind(null,false)}>否决</button>
             </div>

@@ -10,7 +10,9 @@ contract MyERC20 is ERC20 {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {
 
     }
-    
+    function claimed() view external returns(bool){
+        return claimedList[msg.sender];
+    }
     function airdrop() external {
         require(claimedList[msg.sender] == false, "This user has claimed airdrop already");
         _mint(msg.sender, 10000);
